@@ -1,21 +1,22 @@
 
 TARGET = main
 
-CC	= gcc
-CFLAGS	= -g
+CC      = gcc
+CFLAGS  = -g
+LFLAGS  = -lcurses
 
-SRC	= main.c process_command_line.c
-OBJ	= main.o process_command_line.o
-HDRS	= main.h process_command_line.h
+SRC     = main.c process_command_line.c
+OBJ     = main.o process_command_line.o
+HDRS    = main.h process_command_line.h
 
-%.o:	%.c 
+%.o:    %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-all:	$(TARGET)
+all:    $(TARGET)
 
 
-main:	$(OBJ) $(SRC) $(HDR)
-	$(CC) -o $@ $(OBJ)
+main:   $(OBJ) $(SRC) $(HDR)
+	$(CC) $(LFLAGS) -o $@ $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(TARGET)

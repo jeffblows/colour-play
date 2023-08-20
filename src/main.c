@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <signal.h>
+#include <curses.h>
 
 #include "main.h"
 #include "process_command_line.h"
@@ -25,13 +26,21 @@ int main(int argc, char** argv) {
   signal(SIGINT, exit_irq);
   signal(SIGQUIT, exit_irq);
 
+  initscr();
+  start_color();
+
+  init_pair(1, COLOR_RED, COLOR_BLACK);
+  attron(COLOR_PAIR(1));
   uint8_t i = 0;
   while (!exit_program) {
-    printf("HW %09d\r", i);
-    fflush(stdout);
+    mvwprintw(stdscr, 0, 0, "HW %09d\r", i);
+    refresh();
+//    fflush(stdout);
     usleep(100000);
     i++;
   }
+  attroff(COLOR_PAIR(1));
   printf("\nexiting now\n");
+  endwin();
 }
 
