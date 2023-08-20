@@ -1,0 +1,10 @@
+# gitignore
+
+*.o
+
+#local editor files - ludwig with revisions set
+*~*
+
+# target binaries
+src/main
+
