@@ -16,7 +16,7 @@ all:    $(TARGET)
 
 
 main:   $(OBJ) $(SRC) $(HDR)
-	$(CC) $(LFLAGS) -o $@ $(OBJ)
+	$(CC) -o $@ $(OBJ) $(LFLAGS)
 
 clean:
 	rm -f $(OBJ) $(TARGET)
