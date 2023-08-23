@@ -4,6 +4,13 @@
  * main.c
  *
  * Copyright (c) 2023, Jeff Blows
+ *
+ * Collection of common methods
+ *  command line porecessing
+ *  threads
+ *  mutex lock
+ *  interupt handling
+ *
  */
 
 #include <stdio.h>
@@ -20,8 +27,6 @@
 
 
 bool exit_program = false;
-
-
 /*
  * @brief set the exit flag when an interupt is received
  *
@@ -38,7 +43,7 @@ void reset_irq(int signal) {
   command_line_params.verbose = (command_line_params.verbose + 1) % MAX_VERBOSE_LEVEL;
 }
 
-// used between two threads - only updated part_seconds thread
+// used between two threads - only updated tenth_seconds thread
 uint8_t time_index;
 pthread_mutex_t screen_lock;
 
