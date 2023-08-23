@@ -5,9 +5,9 @@ CC      = gcc
 CFLAGS  = -g
 LFLAGS  = -lcurses
 
-SRC     = main.c process_command_line.c
-OBJ     = main.o process_command_line.o
-HDRS    = main.h process_command_line.h
+SRC     = main.c process_command_line.c thrd.c
+OBJ     = main.o process_command_line.o thrd.o
+HDRS    = main.h process_command_line.h thrd.h
 
 %.o:    %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -19,5 +19,5 @@ main:   $(OBJ) $(SRC) $(HDR)
 	$(CC) -o $@ $(OBJ) $(LFLAGS)
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) $(TARGET) *~*
 

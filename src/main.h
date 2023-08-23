@@ -28,6 +28,6 @@
 #define _DEBUG_PRINT(...)
 #endif
 
-
+extern bool exit_program;
 
 #endif
