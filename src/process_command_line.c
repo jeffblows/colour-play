@@ -18,7 +18,7 @@
 #include "process_command_line.h"
 
 
-command_line_params_struct command_line_params = {.verbose = 0, .loop_count = 0};
+command_line_params_struct command_line_params = {.verbose = 0, .loop_count = 0, .pthreads = 0};
 
 /**
  * @brief display a short message for command usage
@@ -31,10 +31,14 @@ void show_usage(char * command_name) {
 int process_command_line(int argc, char** argv) {
   int opt;
 
-  while ((opt = getopt(argc, argv, "v:")) != -1) {
+  while ((opt = getopt(argc, argv, "pv:")) != -1) {
     switch (opt) {
       case 'v': {
 	command_line_params.verbose = strtoul(optarg, NULL, 0);
+	break;
+      }
+      case 'p': {
+	command_line_params.pthreads = 1;
 	break;
       }
       default: {

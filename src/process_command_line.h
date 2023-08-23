@@ -19,6 +19,7 @@
 typedef struct {
   int verbose;
   int loop_count;
+  int pthreads;
 } command_line_params_struct;
 
 extern command_line_params_struct command_line_params;
