@@ -90,7 +90,9 @@ void* update_seconds(void *arg) {
       attron(COLOR_PAIR(1));
       refresh();
       pthread_mutex_unlock(&screen_lock);
-      exit_program = (loop_count == command_line_params.loop_count);
+      if (loop_count == command_line_params.loop_count) {
+	raise(SIGINT);
+      }
       loop_count++;
     }
     usleep(100000);
@@ -122,6 +124,7 @@ int main(int argc, char** argv) {
   pthread_create(&update_tenth_seconds_thread, NULL, update_tenth_seconds, NULL);
 
   do {
+    pause();
   } while (!exit_program);
 
   attroff(COLOR_PAIR(1));
