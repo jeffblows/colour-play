@@ -28,6 +28,7 @@
 #define _DEBUG_PRINT(...)
 #endif
 
-extern bool exit_program;
+extern bool    exit_program;
+extern uint8_t time_index;
 
 #endif

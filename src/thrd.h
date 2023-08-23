@@ -10,8 +10,6 @@
 #ifndef _THRD_H
 #define _THRD_H
 
-int t_update_tenth_seconds(void *arg);
-int t_update_seconds(void *arg);
-void thrd_init();
+void thrd_start();
 
 #endif

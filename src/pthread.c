@@ -1,43 +1,48 @@
 /*
- * 23-AUG-2023
  *
- * thrd.c
+ * 24-aug-2023
+ *
+ * pthread.c
  *
  * Copyright (c) 2023, Jeff Blows
  *
  */
 
+
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <signal.h>
-#include <threads.h>
-#include <ncurses.h>
+#include <curses.h>
 
 #include "main.h"
 #include "process_command_line.h"
-#include "thrd.h"
 
-static mtx_t t_screen_lock;
-static thrd_t update_seconds_thrd;
-static thrd_t update_tenth_seconds_thrd;
+static pthread_mutex_t p_screen_lock;
 
+
+// two threads
+//    display tenth of seconds on top line of screen
+//    display full seconds on bottom line of screen
+static pthread_t update_seconds_thread;
+static pthread_t update_tenth_seconds_thread;
 
 /*
  * @brief display a tenth of seconds counter on the top line of the screen
  *
  */
-int t_update_tenth_seconds(void *arg) {
-  mtx_lock(&t_screen_lock);
+void* update_tenth_seconds(void *arg) {
+  pthread_mutex_lock(&p_screen_lock);
   attroff(COLOR_PAIR(1));
   mvwprintw(stdscr, 0, 0, "HW %04d\r", time_index);
   attron(COLOR_PAIR(1));
   refresh();
-  mtx_unlock(&t_screen_lock);
+  pthread_mutex_unlock(&p_screen_lock);
   while (!exit_program) {
-    mtx_lock(&t_screen_lock);
+    pthread_mutex_lock(&p_screen_lock);
     mvwprintw(stdscr, 0, 3, "%04d\r", time_index);
     refresh();
-    mtx_unlock(&t_screen_lock);
+    pthread_mutex_unlock(&p_screen_lock);
     usleep(100000);
     time_index++;
   }
@@ -48,16 +53,16 @@ int t_update_tenth_seconds(void *arg) {
  * @brief display a seconds counter on the bottom line of the screen
  *
  */
-int t_update_seconds(void *arg) {
+void* update_seconds(void *arg) {
   int loop_count = 0;
   while (!exit_program) {
     if (time_index % 10 == 0) {
-      mtx_lock(&t_screen_lock);
+      pthread_mutex_lock(&p_screen_lock);
       attroff(COLOR_PAIR(1));
       mvwprintw(stdscr, LINES - 1, 0, "%04d\r", loop_count);
       attron(COLOR_PAIR(1));
       refresh();
-      mtx_unlock(&t_screen_lock);
+      pthread_mutex_unlock(&p_screen_lock);
       if (loop_count == command_line_params.loop_count) {
         raise(SIGINT);
       }
@@ -67,13 +72,14 @@ int t_update_seconds(void *arg) {
   }
 }
 
-
 /*
- * @brief initialise thrd
+ * @brief initialise and start the pthreads
+ *
+ * @return none
  *
  */
-void thrd_start() {
-  mtx_init(&t_screen_lock, mtx_plain);
-  thrd_create(&update_seconds_thrd, t_update_seconds, NULL);
-  thrd_create(&update_tenth_seconds_thrd, t_update_tenth_seconds, NULL);
+void pthread_start() {
+  pthread_mutex_init(&p_screen_lock, NULL);
+  pthread_create(&update_seconds_thread, NULL, update_seconds, NULL);
+  pthread_create(&update_tenth_seconds_thread, NULL, update_tenth_seconds, NULL);
 }
