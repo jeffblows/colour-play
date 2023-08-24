@@ -67,7 +67,12 @@ int main(int argc, char** argv) {
   time_index = 0;
 
   if (command_line_params.pthreads == 1) {
-    pthread_start();
+    if (pthread_start() != 0) {
+      if (command_line_params.verbose != 0) {
+        fprintf(stderr, "Pthread create failed\n");
+      }
+      return EXIT_FAILURE;
+    }
   } else {
     thrd_start();
   }

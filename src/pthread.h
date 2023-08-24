@@ -11,6 +11,6 @@
 #ifndef _PTHREAD_H
 #define _PTHREAD_H
 
-extern void pthread_start();
+extern int pthread_start();
 
 #endif

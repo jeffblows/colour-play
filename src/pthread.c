@@ -32,6 +32,7 @@ static pthread_t update_tenth_seconds_thread;
  *
  */
 void* update_tenth_seconds(void *arg) {
+  int lock_status = 0;
   pthread_mutex_lock(&p_screen_lock);
   attroff(COLOR_PAIR(1));
   mvwprintw(stdscr, 0, 0, "HW %04d\r", time_index);
@@ -39,10 +40,11 @@ void* update_tenth_seconds(void *arg) {
   refresh();
   pthread_mutex_unlock(&p_screen_lock);
   while (!exit_program) {
-    pthread_mutex_lock(&p_screen_lock);
-    mvwprintw(stdscr, 0, 3, "%04d\r", time_index);
-    refresh();
-    pthread_mutex_unlock(&p_screen_lock);
+    if ((lock_status = pthread_mutex_trylock(&p_screen_lock)) == 0)   {
+      mvwprintw(stdscr, 0, 3, "%04d\r", time_index);
+      refresh();
+      pthread_mutex_unlock(&p_screen_lock);
+    }
     usleep(100000);
     time_index++;
   }
@@ -54,15 +56,17 @@ void* update_tenth_seconds(void *arg) {
  *
  */
 void* update_seconds(void *arg) {
+  int lock_status = 0;
   int loop_count = 0;
   while (!exit_program) {
     if (time_index % 10 == 0) {
-      pthread_mutex_lock(&p_screen_lock);
-      attroff(COLOR_PAIR(1));
-      mvwprintw(stdscr, LINES - 1, 0, "%04d\r", loop_count);
-      attron(COLOR_PAIR(1));
-      refresh();
-      pthread_mutex_unlock(&p_screen_lock);
+      if ((lock_status = pthread_mutex_trylock(&p_screen_lock)) != 0) {
+        attroff(COLOR_PAIR(1));
+        mvwprintw(stdscr, LINES - 1, 0, "%04d\r", loop_count);
+        attron(COLOR_PAIR(1));
+        refresh();
+        pthread_mutex_unlock(&p_screen_lock);
+      }
       if (loop_count == command_line_params.loop_count) {
         raise(SIGINT);
       }
@@ -75,11 +79,21 @@ void* update_seconds(void *arg) {
 /*
  * @brief initialise and start the pthreads
  *
- * @return none
+ * @return return status of system calls - 0 if success
  *
  */
-void pthread_start() {
-  pthread_mutex_init(&p_screen_lock, NULL);
-  pthread_create(&update_seconds_thread, NULL, update_seconds, NULL);
-  pthread_create(&update_tenth_seconds_thread, NULL, update_tenth_seconds, NULL);
+int pthread_start() {
+  int rc = 0;
+
+  if ((rc = pthread_mutex_init(&p_screen_lock, NULL)) != 0) {
+    return rc;
+  }
+  if ((rc = pthread_create(&update_seconds_thread, NULL, update_seconds, NULL)) != 0) {
+    return rc;
+  }
+  if ((rc = pthread_create(&update_tenth_seconds_thread, NULL, update_tenth_seconds, NULL)) != 0) {
+    return rc;
+  }
+
+  return 1;
 }

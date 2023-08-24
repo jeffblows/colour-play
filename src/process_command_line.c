@@ -1,6 +1,3 @@
-
-
-
 /*
  * 18-Aug-2023
  *
@@ -34,16 +31,16 @@ int process_command_line(int argc, char** argv) {
   while ((opt = getopt(argc, argv, "pv:")) != -1) {
     switch (opt) {
       case 'v': {
-	command_line_params.verbose = strtoul(optarg, NULL, 0);
-	break;
+        command_line_params.verbose = strtoul(optarg, NULL, 0);
+        break;
       }
       case 'p': {
-	command_line_params.pthreads = 1;
-	break;
+        command_line_params.pthreads = 1;
+        break;
       }
       default: {
-	show_usage(argv[0]);
-	return PCL_BAD_OPTION;
+        show_usage(argv[0]);
+        return PCL_BAD_OPTION;
       }
     }
   }
