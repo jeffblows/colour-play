@@ -61,13 +61,13 @@ void* update_seconds(void *arg) {
   int last_time_index = -1;
   while (!exit_program) {
     if ((last_time_index != time_index) && (time_index % 10 == 0)) {
-      if ((lock_status = pthread_mutex_trylock(&p_screen_lock)) != 0) {
+      if ((lock_status = pthread_mutex_trylock(&p_screen_lock)) == 0) {
         attroff(COLOR_PAIR(1));
         mvwprintw(stdscr, LINES - 1, 0, "%04d\r", loop_count);
         attron(COLOR_PAIR(1));
         refresh();
+        pthread_mutex_unlock(&p_screen_lock);
       }
-      pthread_mutex_unlock(&p_screen_lock);
       last_time_index = time_index;
       if (loop_count == command_line_params.loop_count) {
         raise(SIGINT);
