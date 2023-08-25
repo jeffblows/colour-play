@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
   if (command_line_params.pthreads == 1) {
     if (pthread_start() != 0) {
       if (command_line_params.verbose != 0) {
+        endwin();
         fprintf(stderr, "Pthread create failed\n");
       }
       return EXIT_FAILURE;
