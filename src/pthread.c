@@ -10,10 +10,12 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
 #include <curses.h>
+#include <errno.h>
 
 #include "main.h"
 #include "process_command_line.h"
@@ -33,17 +35,31 @@ static pthread_t update_tenth_seconds_thread;
  */
 void* update_tenth_seconds(void *arg) {
   int lock_status = 0;
-  pthread_mutex_lock(&p_screen_lock);
+  int rc = 0;
+
+  if ((rc = pthread_mutex_lock(&p_screen_lock)) != 0) {
+    exit(EXIT_FAILURE);
+  }
   attroff(COLOR_PAIR(1));
   mvwprintw(stdscr, 0, 0, "HW %04d\r", time_index);
   attron(COLOR_PAIR(1));
   refresh();
-  pthread_mutex_unlock(&p_screen_lock);
+  if ((rc = pthread_mutex_unlock(&p_screen_lock)) != 0) {
+    if (rc == EPERM) {
+      // this is the only valid error
+      exit(EXIT_FAILURE);
+    }
+  }
   while (!exit_program) {
     if ((lock_status = pthread_mutex_trylock(&p_screen_lock)) == 0)   {
       mvwprintw(stdscr, 0, 3, "%04d\r", time_index);
       refresh();
-      pthread_mutex_unlock(&p_screen_lock);
+      if ((rc = pthread_mutex_unlock(&p_screen_lock)) != 0) {
+        if (rc == EPERM) {
+          // this is the only valid error
+          continue;
+        }
+      }
     }
     usleep(100000);
     time_index++;
@@ -59,6 +75,8 @@ void* update_seconds(void *arg) {
   int lock_status = 0;
   int loop_count = 0;
   int last_time_index = -1;
+  int rc = 0;
+
   while (!exit_program) {
     if ((last_time_index != time_index) && (time_index % 10 == 0)) {
       if ((lock_status = pthread_mutex_trylock(&p_screen_lock)) == 0) {
@@ -66,7 +84,12 @@ void* update_seconds(void *arg) {
         mvwprintw(stdscr, LINES - 1, 0, "%04d\r", loop_count);
         attron(COLOR_PAIR(1));
         refresh();
-        pthread_mutex_unlock(&p_screen_lock);
+        if ((rc = pthread_mutex_unlock(&p_screen_lock)) != 0) {
+          if (rc == EPERM) {
+            // this is the only valid error
+            continue;
+          }
+        }
       }
       last_time_index = time_index;
       if (loop_count == command_line_params.loop_count) {
