@@ -66,22 +66,18 @@ int main(int argc, char** argv) {
 
   time_index = 0;
 
+  int thread_status = 0;
   if (command_line_params.pthreads == 1) {
-    if (pthread_start() != 0) {
-      if (command_line_params.verbose != 0) {
-        endwin();
-        fprintf(stderr, "Pthread create failed\n");
-      }
-      return EXIT_FAILURE;
-    }
+    thread_status = pthread_start();
   } else {
-    if (thrd_start() != 0) {
-      if (command_line_params.verbose != 0) {
-        endwin();
-        fprintf(stderr, "C11 thread create failed\n");
-      }
-      return EXIT_FAILURE;
+    thread_status = thrd_start();
+  }
+  if (thread_status != 0) {
+    endwin();
+    if (command_line_params.verbose != 0) {
+      fprintf(stderr, "%s: Thread create failed\n", (command_line_params.pthreads == 1) ? "Pthreads" : "C11");
     }
+    return EXIT_FAILURE;
   }
 
   do {
