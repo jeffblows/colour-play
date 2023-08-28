@@ -75,7 +75,13 @@ int main(int argc, char** argv) {
       return EXIT_FAILURE;
     }
   } else {
-    thrd_start();
+    if (thrd_start() != 0) {
+      if (command_line_params.verbose != 0) {
+        endwin();
+        fprintf(stderr, "C11 thread create failed\n");
+      }
+      return EXIT_FAILURE;
+    }
   }
 
   do {

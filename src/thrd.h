@@ -10,6 +10,6 @@
 #ifndef _THRD_H
 #define _THRD_H
 
-void thrd_start();
+int thrd_start();
 
 #endif

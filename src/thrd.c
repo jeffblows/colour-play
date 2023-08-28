@@ -50,14 +50,18 @@ int t_update_tenth_seconds(void *arg) {
  */
 int t_update_seconds(void *arg) {
   int loop_count = 0;
+  int last_time_index = -1;
+
   while (!exit_program) {
-    if (time_index % 10 == 0) {
-      mtx_lock(&t_screen_lock);
-      attroff(COLOR_PAIR(1));
-      mvwprintw(stdscr, LINES - 1, 0, "%04d\r", loop_count);
-      attron(COLOR_PAIR(1));
-      refresh();
-      mtx_unlock(&t_screen_lock);
+    if ((last_time_index != time_index) && (time_index % 10 == 0)) {
+      if (mtx_trylock(&t_screen_lock) == 0) {
+        attroff(COLOR_PAIR(1));
+        mvwprintw(stdscr, LINES - 1, 0, "%04d\r", loop_count);
+        attron(COLOR_PAIR(1));
+        refresh();
+        mtx_unlock(&t_screen_lock);
+      }
+      last_time_index = time_index;
       if (loop_count == command_line_params.loop_count) {
         raise(SIGINT);
       }
@@ -72,8 +76,17 @@ int t_update_seconds(void *arg) {
  * @brief initialise thrd
  *
  */
-void thrd_start() {
-  mtx_init(&t_screen_lock, mtx_plain);
-  thrd_create(&update_seconds_thrd, t_update_seconds, NULL);
-  thrd_create(&update_tenth_seconds_thrd, t_update_tenth_seconds, NULL);
+int thrd_start() {
+  int rc = 0;
+  if ((rc = mtx_init(&t_screen_lock, mtx_plain)) != 0) {
+    return rc;
+  }
+  if ((rc = thrd_create(&update_seconds_thrd, t_update_seconds, NULL)) != 0) {
+    return rc;
+  }
+  if ((rc = thrd_create(&update_tenth_seconds_thrd, t_update_tenth_seconds, NULL)) != 0) {
+    return rc;
+  }
+
+  return rc;
 }
