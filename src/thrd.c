@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <threads.h>
 #include <ncurses.h>
+#include <string.h>
 
 #include "main.h"
 #include "process_command_line.h"
@@ -20,7 +21,7 @@
 static mtx_t t_screen_lock;
 static thrd_t update_seconds_thrd;
 static thrd_t update_tenth_seconds_thrd;
-
+static thrd_t update_status_thrd;
 
 /*
  * @brief display a tenth of seconds counter on the top line of the screen
@@ -73,6 +74,40 @@ int t_update_seconds(void *arg) {
 
 
 /*
+ * @brief present a prompt and loop on updates
+ *
+ * @return  nothing
+ *
+ * @note works best if noecho() is set
+ */
+int t_update_status(void *arg) {
+  nodelay(stdscr, false);
+  int loop_ch = 'a';
+  char * verbose_prompt = "Verbose? ";
+
+  mtx_lock(&t_screen_lock);
+  attroff(COLOR_PAIR(1));
+  mvwprintw(stdscr, LINES/2, 0, "%s", verbose_prompt);
+  attron(COLOR_PAIR(1));
+  refresh();
+  mtx_unlock(&t_screen_lock);
+
+  do {
+    loop_ch = getch();
+    if (loop_ch != ERR) {
+      mtx_lock(&t_screen_lock);
+      attroff(COLOR_PAIR(1));
+      mvwprintw(stdscr, LINES/2, strlen(verbose_prompt) + 1, "%c", loop_ch);
+      attron(COLOR_PAIR(1));
+      refresh();
+      mtx_unlock(&t_screen_lock);
+
+      exit_program = loop_ch == 'q';
+    }
+  } while (!exit_program);
+}
+
+/*
  * @brief initialise thrd
  *
  */
@@ -85,6 +120,9 @@ int thrd_start() {
     return rc;
   }
   if ((rc = thrd_create(&update_tenth_seconds_thrd, t_update_tenth_seconds, NULL)) != 0) {
+    return rc;
+  }
+  if ((rc = thrd_create(&update_status_thrd, t_update_status, NULL)) != 0) {
     return rc;
   }
 

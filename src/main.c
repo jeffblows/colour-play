@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
   initscr();
   start_color();
   init_pair(1, COLOR_RED, COLOR_BLACK);
+  noecho();
 
   time_index = 0;
 
@@ -81,11 +82,12 @@ int main(int argc, char** argv) {
   }
 
   do {
-    usleep(200000);
+    usleep(100000);
   } while (!exit_program);
 
+  // TODO wait for thread exits
+
   attroff(COLOR_PAIR(1));
-  usleep(1000000);
   endwin();
   printf("\nexiting now\n");
   printf("Verbose level: %d\n", command_line_params.verbose);

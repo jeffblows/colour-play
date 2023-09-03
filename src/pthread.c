@@ -16,6 +16,7 @@
 #include <signal.h>
 #include <curses.h>
 #include <errno.h>
+#include <string.h>
 
 #include "main.h"
 #include "process_command_line.h"
@@ -28,6 +29,7 @@ static pthread_mutex_t p_screen_lock;
 //    display full seconds on bottom line of screen
 static pthread_t update_seconds_thread;
 static pthread_t update_tenth_seconds_thread;
+static pthread_t update_status_thread;
 
 /*
  * @brief display a tenth of seconds counter on the top line of the screen
@@ -102,6 +104,40 @@ void* update_seconds(void *arg) {
 }
 
 /*
+ * @brief present a prompt and loop on updates
+ *
+ * @return  nothing
+ *
+ * @note works best if noecho() is set
+ */
+void * update_status(void *arg) {
+  nodelay(stdscr, false);
+  int loop_ch = 'a';
+  char * verbose_prompt = "Verbose? ";
+
+  pthread_mutex_lock(&p_screen_lock);
+  attroff(COLOR_PAIR(1));
+  mvwprintw(stdscr, LINES/2, 0, "%s", verbose_prompt);
+  attron(COLOR_PAIR(1));
+  refresh();
+  pthread_mutex_unlock(&p_screen_lock);
+
+  do {
+    loop_ch = getch();
+    if (loop_ch != ERR) {
+      pthread_mutex_lock(&p_screen_lock);
+      attroff(COLOR_PAIR(1));
+      mvwprintw(stdscr, LINES/2, strlen(verbose_prompt) + 1, "%c", loop_ch);
+      attron(COLOR_PAIR(1));
+      refresh();
+      pthread_mutex_unlock(&p_screen_lock);
+
+      exit_program = loop_ch == 'q';
+    }
+  } while (!exit_program);
+}
+
+/*
  * @brief initialise and start the pthreads
  *
  * @return return status of system calls - 0 if success
@@ -117,6 +153,9 @@ int pthread_start() {
     return rc;
   }
   if ((rc = pthread_create(&update_tenth_seconds_thread, NULL, update_tenth_seconds, NULL)) != 0) {
+    return rc;
+  }
+  if ((rc = pthread_create(&update_status_thread, NULL, update_status, NULL)) != 0) {
     return rc;
   }
 
