@@ -27,11 +27,10 @@
 #include "thrd.h"
 
 // used between two threads - only updated tenth_seconds thread
-uint8_t time_index;
-
+uint8_t      time_index     = 0;
 const char * verbose_prompt = "Verbose: ";
+bool         exit_program   = false;
 
-bool exit_program = false;
 /*
  * @brief set the exit flag when an interupt is received
  *
@@ -83,8 +82,6 @@ int main(int argc, char** argv) {
   }
 
   setup_terminal();
-
-  time_index = 0;
 
   int thread_status = 0;
   if (command_line_params.pthreads == 1) {
