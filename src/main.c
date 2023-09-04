@@ -29,6 +29,8 @@
 // used between two threads - only updated tenth_seconds thread
 uint8_t time_index;
 
+const char * verbose_prompt = "Verbose: ";
+
 bool exit_program = false;
 /*
  * @brief set the exit flag when an interupt is received
@@ -46,6 +48,26 @@ void reset_irq(int signal) {
   command_line_params.verbose = (command_line_params.verbose + 1) % MAX_VERBOSE_LEVEL;
 }
 
+
+/*
+ * @brief initialise curses and build default screen
+ *
+ * @return none
+ */
+void setup_terminal() {
+
+  initscr();
+  start_color();
+  init_pair(1, COLOR_RED, COLOR_BLACK);
+  noecho();
+
+  attroff(COLOR_PAIR(1));
+  mvwprintw(stdscr, LINES/2, 0, "%s", verbose_prompt);
+  attron(COLOR_PAIR(1));
+  refresh();
+
+}
+
 /*
  * @brief main to create threads and loop until end
  *
@@ -60,10 +82,7 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  initscr();
-  start_color();
-  init_pair(1, COLOR_RED, COLOR_BLACK);
-  noecho();
+  setup_terminal();
 
   time_index = 0;
 
