@@ -83,14 +83,6 @@ int t_update_seconds(void *arg) {
 int t_update_status(void *arg) {
   nodelay(stdscr, false);
   int loop_ch = 'a';
-  char * verbose_prompt = "Verbose? ";
-
-  mtx_lock(&t_screen_lock);
-  attroff(COLOR_PAIR(1));
-  mvwprintw(stdscr, LINES/2, 0, "%s", verbose_prompt);
-  attron(COLOR_PAIR(1));
-  refresh();
-  mtx_unlock(&t_screen_lock);
 
   do {
     loop_ch = getch();

@@ -109,18 +109,11 @@ void* update_seconds(void *arg) {
  * @return  nothing
  *
  * @note works best if noecho() is set
+ * @assumes verbose_prompt is defined externally
  */
 void * update_status(void *arg) {
   nodelay(stdscr, false);
   int loop_ch = 'a';
-  char * verbose_prompt = "Verbose? ";
-
-  pthread_mutex_lock(&p_screen_lock);
-  attroff(COLOR_PAIR(1));
-  mvwprintw(stdscr, LINES/2, 0, "%s", verbose_prompt);
-  attron(COLOR_PAIR(1));
-  refresh();
-  pthread_mutex_unlock(&p_screen_lock);
 
   do {
     loop_ch = getch();

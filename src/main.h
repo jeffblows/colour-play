@@ -30,5 +30,6 @@
 
 extern bool    exit_program;
 extern uint8_t time_index;
+extern const char * verbose_prompt;
 
 #endif
