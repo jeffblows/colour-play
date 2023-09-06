@@ -97,8 +97,33 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
+  wtimeout(stdscr, 100000);
+  char loop_ch;
   do {
-    usleep(100000);
+
+    loop_ch = getch();
+    if (loop_ch != ERR) {
+      if (command_line_params.pthreads == 1) {
+        pthread_update_status(loop_ch);
+      } else {
+        thrd_update_status(loop_ch);
+      }
+      switch (loop_ch) {
+        case 'q': {
+          exit_program = loop_ch == 'q';
+          break;
+        }
+        case '1':
+        case '2':
+        case '3': {
+          command_line_params.verbose = loop_ch - '0';
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    }
   } while (!exit_program);
 
   // TODO wait for thread exits

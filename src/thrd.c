@@ -21,7 +21,6 @@
 static mtx_t t_screen_lock;
 static thrd_t update_seconds_thrd;
 static thrd_t update_tenth_seconds_thrd;
-static thrd_t update_status_thrd;
 
 /*
  * @brief display a tenth of seconds counter on the top line of the screen
@@ -74,29 +73,20 @@ int t_update_seconds(void *arg) {
 
 
 /*
- * @brief present a prompt and loop on updates
+ * @brief put a character to the screen
  *
  * @return  nothing
  *
- * @note works best if noecho() is set
  */
-int t_update_status(void *arg) {
-  nodelay(stdscr, false);
-  int loop_ch = 'a';
+void thrd_update_status(char ch) {
 
-  do {
-    loop_ch = getch();
-    if (loop_ch != ERR) {
-      mtx_lock(&t_screen_lock);
-      attroff(COLOR_PAIR(1));
-      mvwprintw(stdscr, LINES/2, strlen(verbose_prompt) + 1, "%c", loop_ch);
-      attron(COLOR_PAIR(1));
-      refresh();
-      mtx_unlock(&t_screen_lock);
+  mtx_lock(&t_screen_lock);
+  attroff(COLOR_PAIR(1));
+  mvwprintw(stdscr, LINES/2, strlen(verbose_prompt) + 1, "%c", ch);
+  attron(COLOR_PAIR(1));
+  refresh();
+  mtx_unlock(&t_screen_lock);
 
-      exit_program = loop_ch == 'q';
-    }
-  } while (!exit_program);
 }
 
 /*
@@ -112,9 +102,6 @@ int thrd_start() {
     return rc;
   }
   if ((rc = thrd_create(&update_tenth_seconds_thrd, t_update_tenth_seconds, NULL)) != 0) {
-    return rc;
-  }
-  if ((rc = thrd_create(&update_status_thrd, t_update_status, NULL)) != 0) {
     return rc;
   }
 

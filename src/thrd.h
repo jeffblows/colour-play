@@ -10,6 +10,7 @@
 #ifndef _THRD_H
 #define _THRD_H
 
-int thrd_start();
+extern int thrd_start();
+extern void thrd_update_status(char ch);
 
 #endif
