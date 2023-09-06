@@ -29,7 +29,6 @@ static pthread_mutex_t p_screen_lock;
 //    display full seconds on bottom line of screen
 static pthread_t update_seconds_thread;
 static pthread_t update_tenth_seconds_thread;
-static pthread_t update_status_thread;
 
 /*
  * @brief display a tenth of seconds counter on the top line of the screen
@@ -104,30 +103,19 @@ void* update_seconds(void *arg) {
 }
 
 /*
- * @brief present a prompt and loop on updates
+ * @brief echo a character to the screen
  *
- * @return  nothing
- *
- * @note works best if noecho() is set
- * @assumes verbose_prompt is defined externally
+ * @return nothing
  */
-void * update_status(void *arg) {
-  nodelay(stdscr, false);
-  int loop_ch = 'a';
+void pthread_update_status(char ch) {
 
-  do {
-    loop_ch = getch();
-    if (loop_ch != ERR) {
-      pthread_mutex_lock(&p_screen_lock);
-      attroff(COLOR_PAIR(1));
-      mvwprintw(stdscr, LINES/2, strlen(verbose_prompt) + 1, "%c", loop_ch);
-      attron(COLOR_PAIR(1));
-      refresh();
-      pthread_mutex_unlock(&p_screen_lock);
+  pthread_mutex_lock(&p_screen_lock);
+  attroff(COLOR_PAIR(1));
+  mvwprintw(stdscr, LINES/2, strlen(verbose_prompt) + 1, "%c", ch);
+  attron(COLOR_PAIR(1));
+  refresh();
+  pthread_mutex_unlock(&p_screen_lock);
 
-      exit_program = loop_ch == 'q';
-    }
-  } while (!exit_program);
 }
 
 /*
@@ -146,9 +134,6 @@ int pthread_start() {
     return rc;
   }
   if ((rc = pthread_create(&update_tenth_seconds_thread, NULL, update_tenth_seconds, NULL)) != 0) {
-    return rc;
-  }
-  if ((rc = pthread_create(&update_status_thread, NULL, update_status, NULL)) != 0) {
     return rc;
   }
 
