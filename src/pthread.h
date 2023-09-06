@@ -12,6 +12,6 @@
 #define _PTHREAD_H
 
 extern int pthread_start();
-extern void pthread_update_status(char ch);
+extern void pthread_update_status(int y, int x, char ch);
 
 #endif
