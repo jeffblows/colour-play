@@ -11,6 +11,6 @@
 #define _THRD_H
 
 extern int thrd_start();
-extern void thrd_update_status(char ch);
+extern void thrd_update_status(int y, int x, char ch);
 
 #endif

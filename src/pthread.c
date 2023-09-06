@@ -16,7 +16,6 @@
 #include <signal.h>
 #include <curses.h>
 #include <errno.h>
-#include <string.h>
 
 #include "main.h"
 #include "process_command_line.h"
@@ -107,11 +106,11 @@ void* update_seconds(void *arg) {
  *
  * @return nothing
  */
-void pthread_update_status(char ch) {
+void pthread_update_status(int y,  int x, char ch) {
 
   pthread_mutex_lock(&p_screen_lock);
   attroff(COLOR_PAIR(1));
-  mvwprintw(stdscr, LINES/2, strlen(verbose_prompt) + 1, "%c", ch);
+  mvwprintw(stdscr, y, x, "%c", ch);
   attron(COLOR_PAIR(1));
   refresh();
   pthread_mutex_unlock(&p_screen_lock);

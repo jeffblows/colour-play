@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 #include <curses.h>
 
 #include "main.h"
@@ -104,9 +105,9 @@ int main(int argc, char** argv) {
     loop_ch = getch();
     if (loop_ch != ERR) {
       if (command_line_params.pthreads == 1) {
-        pthread_update_status(loop_ch);
+        pthread_update_status(LINES/2, strlen(verbose_prompt) + 1, loop_ch);
       } else {
-        thrd_update_status(loop_ch);
+        thrd_update_status(LINES/2, strlen(verbose_prompt) + 1, loop_ch);
       }
       switch (loop_ch) {
         case 'q': {

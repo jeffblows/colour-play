@@ -12,7 +12,6 @@
 #include <signal.h>
 #include <threads.h>
 #include <ncurses.h>
-#include <string.h>
 
 #include "main.h"
 #include "process_command_line.h"
@@ -78,11 +77,11 @@ int t_update_seconds(void *arg) {
  * @return  nothing
  *
  */
-void thrd_update_status(char ch) {
+void thrd_update_status(int y, int x, char ch) {
 
   mtx_lock(&t_screen_lock);
   attroff(COLOR_PAIR(1));
-  mvwprintw(stdscr, LINES/2, strlen(verbose_prompt) + 1, "%c", ch);
+  mvwprintw(stdscr, y, x, "%c", ch);
   attron(COLOR_PAIR(1));
   refresh();
   mtx_unlock(&t_screen_lock);
