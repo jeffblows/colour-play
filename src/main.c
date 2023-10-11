@@ -54,12 +54,15 @@ void reset_irq(int signal) {
  *
  * @return none
  */
-void setup_terminal() {
+void setup_terminal(mmask_t * old_mask_ptr) {
 
   initscr();
   start_color();
   init_pair(1, COLOR_RED, COLOR_BLACK);
   noecho();
+  cbreak();
+  mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, old_mask_ptr);
+  keypad(stdscr, TRUE);
 
   attroff(COLOR_PAIR(1));
   mvwprintw(stdscr, LINES/2, 0, "%s", verbose_prompt);
@@ -69,10 +72,68 @@ void setup_terminal() {
 }
 
 /*
+ * @brief clear the full specified line and return to the current screen position
+ *
+ */
+void clear_line(int row) {
+  int y, x;            // to store where you are
+  getyx(stdscr, y, x); // save current pos
+  move(row, 0);          // move to begining of line
+  clrtoeol();          // clear line
+  move(y, x);
+}
+
+/*
+ * @brief show details about the mouse event
+ *
+ * @param mouse_mask the event
+ *
+ */
+void show_event_type(int y, mmask_t mouse_mask) {
+
+  if (y < LINES) {
+    int report_row = y;
+    clear_line(report_row);
+    switch (mouse_mask) {
+      case BUTTON1_CLICKED: {
+        mvprintw(report_row, 1, "Button 1");
+        break;
+      }
+      case BUTTON1_PRESSED: {
+        mvprintw(report_row, 1, "Button 1 clicked");
+        break;
+      }
+      case BUTTON1_RELEASED: {
+        mvprintw(report_row, 1, "Button 1 released");
+        break;
+      }
+      case BUTTON1_DOUBLE_CLICKED: {
+        mvprintw(report_row, 1, "Button 1 Double");
+        break;
+      }
+      case BUTTON3_CLICKED: {
+        mvprintw(report_row, 1, "Button 3");
+        break;
+      }
+      default: {
+        mvprintw(report_row, 1, "Not Recognised");
+        break;
+      }
+    }
+    clear_line(report_row+1);
+    mvprintw(report_row+1, 1, "binary: %d", mouse_mask);
+  }
+
+}
+
+
+/*
  * @brief main to create threads and loop until end
  *
  */
 int main(int argc, char** argv) {
+
+  mmask_t old_mouse_mask;
 
   signal(SIGINT, exit_irq);
   signal(SIGQUIT, exit_irq);
@@ -82,7 +143,7 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  setup_terminal();
+  setup_terminal(&old_mouse_mask);
 
   int thread_status = 0;
   if (command_line_params.pthreads == 1) {
@@ -99,7 +160,7 @@ int main(int argc, char** argv) {
   }
 
   wtimeout(stdscr, 100000);
-  char loop_ch;
+  int loop_ch;
   do {
 
     loop_ch = getch();

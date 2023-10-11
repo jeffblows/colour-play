@@ -106,11 +106,21 @@ void* update_seconds(void *arg) {
  *
  * @return nothing
  */
-void pthread_update_status(int y,  int x, char ch) {
+void pthread_update_status(int y,  int x, int ch) {
 
   pthread_mutex_lock(&p_screen_lock);
   attroff(COLOR_PAIR(1));
-  mvwprintw(stdscr, y, x, "%c", ch);
+  if (ch == KEY_MOUSE) {
+    MEVENT event;
+    if (getmouse(&event) == OK) {
+      mvwprintw(stdscr, y+1, 1, "X %4d",event.x);
+      mvwprintw(stdscr, y+2, 1, "Y %4d",event.y);
+      show_event_type(y+3, event.bstate);
+      //mvwprintw(stdscr, 0, 0, "Mouse Event!");
+    }
+  } else {
+    mvwprintw(stdscr, y, x, "%c", ch);
+  }
   attron(COLOR_PAIR(1));
   refresh();
   pthread_mutex_unlock(&p_screen_lock);
