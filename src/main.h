@@ -31,4 +31,6 @@
 extern bool    exit_program;
 extern uint8_t time_index;
 
+extern void show_event_type(int y, mmask_t mouse_mask);
+
 #endif
